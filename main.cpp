@@ -13,6 +13,9 @@ int main() {
   vec1 = vec1.cross(vec2);
   std::cout << vec1[0] << ' ' << vec1[1] << ' ' << vec1[2] << std::endl;
 
+  vec1 = vec1.normalize();
+  std::cout << vec1[0] << ' ' << vec1[1] << ' ' << vec1[2] << std::endl;
+
   scene.render();
 
   return 0;

@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cassert>
 
 template <typename T, unsigned int Size>
@@ -27,6 +28,15 @@ Vector<T, Size> Vector<T, Size>::cross(const Vector<T, Size>& vec) const {
   res[0] = data[1] * vec.getData()[2] - data[2] * vec.getData()[1];
   res[1] = -(data[0] * vec.getData()[2] - data[2] * vec.getData()[0]);
   res[2] = data[0] * vec.getData()[1] - data[1] * vec.getData()[0];
+
+  return res;
+}
+
+template <typename T, unsigned int Size>
+Vector<T, Size> Vector<T, Size>::normalize() const {
+  Vector<T, Size> res = *this;
+
+  res /= std::sqrt(dot(*this));
 
   return res;
 }

@@ -17,6 +17,7 @@ public:
 
   T dot(const Vector& vec) const;
   Vector cross(const Vector& vec) const;
+  Vector normalize() const;
 
   Vector operator+(Vector vec);
   Vector operator+(float val);
