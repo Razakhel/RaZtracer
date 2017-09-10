@@ -9,12 +9,14 @@
 template <typename T, unsigned int Size>
 class Vector {
 public:
+  Vector() {}
   Vector(const std::initializer_list<T>& list);
 
   const std::array<T, Size>& getData() const { return data; }
   std::array<T, Size>& getData() { return data; }
 
   T dot(const Vector& vec) const;
+  Vector cross(const Vector& vec) const;
 
   Vector operator+(Vector vec);
   Vector operator+(float val);
