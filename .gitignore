@@ -1,2 +1,3 @@
 RaZtracer
 *.o
+build/
