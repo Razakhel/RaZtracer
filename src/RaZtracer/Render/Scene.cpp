@@ -10,7 +10,7 @@ void Scene::render(const std::string& fileName) {
 
   for (std::size_t heightIndex = 0; heightIndex < RENDER_HEIGHT; ++heightIndex) {
     for (std::size_t widthIndex = 0; widthIndex < RENDER_HEIGHT; ++widthIndex) {
-      for (auto elt = elements.cbegin(); elt != elements.cend(); ++elt) {
+      for (const auto& shape : m_shapes) {
         //if (elt->intersect())
           // Draw pixel
       }

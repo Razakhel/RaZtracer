@@ -18,24 +18,24 @@ protected:
 
 class Sphere : public Shape {
 public:
-  Sphere() : Shape(Vec3f({ 0.f, 0.f, 0.f }), Vec3f({ 0.5f, 0.5f, 0.5f })), radius{ 1.f }, transparency{ 1.f } {}
+  Sphere() : Shape(Vec3f({ 0.f, 0.f, 0.f }), Vec3f({ 0.5f, 0.5f, 0.5f })), m_radius{ 1.f }, m_transparency{ 1.f } {}
   Sphere(const Vec3f& origin, float radius, const Vec3f& color, float transparency)
-    : Shape(origin, color), radius{ radius }, transparency{ transparency } {}
+    : Shape(origin, color), m_radius{ radius }, m_transparency{ transparency } {}
 
 private:
-  float radius;
-  float transparency;
+  float m_radius;
+  float m_transparency;
 };
 
 class Cube : public Shape {
 public:
-  Cube() : Shape(Vec3f({ 0.f, 0.f, 0.f }), Vec3f({ 0.5f, 0.5f, 0.5f })), size{ 1.f }, transparency{ 1.f } {}
+  Cube() : Shape(Vec3f({ 0.f, 0.f, 0.f }), Vec3f({ 0.5f, 0.5f, 0.5f })), m_size{ 1.f }, m_transparency{ 1.f } {}
   Cube(const Vec3f& origin, float size, const Vec3f& color, float transparency)
-    : Shape(origin, color), size{ size }, transparency{ transparency } {}
+    : Shape(origin, color), m_size{ size }, m_transparency{ transparency } {}
 
 private:
-  float size;
-  float transparency;
+  float m_size;
+  float m_transparency;
 };
 
 #endif // RAZTRACER_SHAPE_HPP
