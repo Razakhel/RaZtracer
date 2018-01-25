@@ -2,18 +2,18 @@
 
 #include "RaZtracer/Math/Matrix.hpp"
 #include "RaZtracer/Render/Scene.hpp"
+#include "RaZtracer/Utils/Image.hpp"
 
-const unsigned int RENDER_WIDTH = 1920, RENDER_HEIGHT = 1080;
+void Scene::render(const std::string& fileName, std::size_t imgWidth, std::size_t imgHeight) {
+  Image img(imgWidth, imgHeight);
 
-void Scene::render(const std::string& fileName) {
-  Matrix<float, RENDER_WIDTH, RENDER_HEIGHT> img;
-
-  for (std::size_t heightIndex = 0; heightIndex < RENDER_HEIGHT; ++heightIndex) {
-    for (std::size_t widthIndex = 0; widthIndex < RENDER_HEIGHT; ++widthIndex) {
+  for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
+    for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
       for (const auto& shape : m_shapes) {
         //if (elt->intersect())
           // Draw pixel
       }
     }
   }
+
 }
