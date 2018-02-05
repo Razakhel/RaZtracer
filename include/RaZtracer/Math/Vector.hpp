@@ -6,13 +6,14 @@
 #include <array>
 #include <initializer_list>
 
-#include "Matrix.hpp"
+//#include "Matrix.hpp"
 
 template <typename T, std::size_t Size>
 class Vector {
 public:
   Vector() = default;
   Vector(const Vector&) = default;
+  Vector(const Vector<T, Size + 1>& vec);
   Vector(const Vector<T, Size - 1>& vec, T val);
   explicit Vector(T val);
   Vector(std::initializer_list<T> list);
@@ -38,7 +39,7 @@ public:
   Vector operator*(float val) const;
   Vector operator/(Vector vec) const;
   Vector operator/(float val) const;
-  template <std::size_t H> Vector operator*(const Matrix<T, Size, H>& mat) const;
+  //template <std::size_t H> Vector operator*(const Matrix<T, Size, H>& mat) const;
   Vector& operator+=(const Vector& vec);
   Vector& operator+=(float val);
   Vector& operator-=(const Vector& vec);

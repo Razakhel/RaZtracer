@@ -2,6 +2,12 @@
 #include <cassert>
 
 template <typename T, std::size_t Size>
+Vector<T, Size>::Vector(const Vector<T, Size + 1>& vec) {
+  for (std::size_t i = 0; i < vec.getSize() - 1; ++i)
+    m_data[i] = vec[i];
+}
+
+template <typename T, std::size_t Size>
 Vector<T, Size>::Vector(const Vector<T, Size - 1>& vec, T val) {
   for (std::size_t i = 0; i < vec.getSize(); ++i)
     m_data[i] = vec[i];
@@ -122,7 +128,7 @@ Vector<T, Size> Vector<T, Size>::operator/(float val) const {
   return res;
 }
 
-template <typename T, std::size_t Size>
+/*template <typename T, std::size_t Size>
 template <std::size_t H>
 Vector<T, Size> Vector<T, Size>::operator*(const Matrix<T, Size, H>& mat) const {
   Vector<T, Size> res;
@@ -133,7 +139,7 @@ Vector<T, Size> Vector<T, Size>::operator*(const Matrix<T, Size, H>& mat) const 
   }
 
   return res;
-}
+}*/
 
 template <typename T, std::size_t Size>
 Vector<T, Size>& Vector<T, Size>::operator+=(const Vector<T, Size>& vec) {

@@ -5,6 +5,8 @@
 
 #include <array>
 
+#include "Vector.hpp"
+
 template <typename T, std::size_t W, std::size_t H>
 class Matrix {
 public:
@@ -33,7 +35,7 @@ public:
   Matrix operator*(float val) const;
   Matrix operator/(Matrix mat) const;
   Matrix operator/(float val) const;
-  //template <std::size_t Size> Vector<T, Size> operator*(const Vector<T, Size>& vec) const;
+  template <std::size_t Size> Vector<T, Size> operator*(const Vector<T, Size>& vec) const;
   template <std::size_t WI, std::size_t HI> Matrix<T, H, WI> operator*(const Matrix<T, WI, HI>& mat) const;
   Matrix& operator+=(const Matrix& mat);
   Matrix& operator+=(float val);

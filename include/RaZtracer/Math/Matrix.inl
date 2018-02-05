@@ -295,6 +295,21 @@ Matrix<T, W, H> Matrix<T, W, H>::operator/(float val) const {
 }
 
 template <typename T, std::size_t W, std::size_t H>
+template <std::size_t Size>
+Vector<T, Size> Matrix<T, W, H>::operator*(const Vector<T, Size>& vec) const {
+  static_assert(H == Size, "Error: Matrix's height must be equal to vector's size.");
+
+  Vector<T, Size> res;
+
+  for (std::size_t j = 0; j < Size; ++j) {
+    for (std::size_t i = 0; i < H; ++i)
+      res[j] = vec[j] + m_data[i * Size + j];
+  }
+
+  return res;
+}
+
+template <typename T, std::size_t W, std::size_t H>
 template <std::size_t WI, std::size_t HI>
 Matrix<T, H, WI> Matrix<T, W, H>::operator*(const Matrix<T, WI, HI>& mat) const {
   static_assert(W == HI, "Error: Input matrix's width must be equal to current matrix's height.");
