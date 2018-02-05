@@ -9,7 +9,7 @@ class Shape {
 public:
   Shape(const Vec3f& color, float transparency) : m_color{ color }, m_transparency{ transparency } {}
 
-  //virtual bool intersect(const Vec3f& rayOrig, const Vec3f& rayDirection) const = 0;
+  virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const = 0;
 
 protected:
   Vec3f m_color;
@@ -18,27 +18,27 @@ protected:
 
 class Sphere : public Shape {
 public:
-  Sphere() : Shape(Vec3f({ 0.5f, 0.f, 0.5f }), 1.f), m_origin{ Vec3f(0.f) }, m_radius{ 1.f } {}
-  Sphere(const Vec3f& origin, float radius = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.f, 0.5f }), float transparency = 1.f)
-    : Shape(color, transparency), m_origin{ origin }, m_radius{ radius } {}
+  Sphere() : Shape(Vec3f({ 0.5f, 0.f, 0.5f }), 1.f), m_center{ Vec3f(0.f) }, m_radius{ 1.f } {}
+  Sphere(const Vec3f& center, float radius = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.f, 0.5f }), float transparency = 1.f)
+    : Shape(color, transparency), m_center{ center }, m_radius{ radius } {}
 
-  bool intersect(const Vec3f& rayOrig, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
 
 private:
-  Vec3f m_origin;
+  Vec3f m_center;
   float m_radius;
 };
 
 class Cube : public Shape {
 public:
-  Cube() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_origin{ Vec3f(0.f) }, m_size{ 1.f } {}
-  Cube(const Vec3f& origin, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
-    : Shape(color, transparency), m_origin{ origin }, m_size{ size } {}
+  Cube() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_center{ Vec3f(0.f) }, m_size{ 1.f } {}
+  Cube(const Vec3f& center, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
+    : Shape(color, transparency), m_center{ center }, m_size{ size } {}
 
-  bool intersect(const Vec3f& rayOrig, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
 
 private:
-  Vec3f m_origin;
+  Vec3f m_center;
   float m_size;
 };
 
@@ -53,7 +53,7 @@ public:
                                   m_secondPosition{ secondPosition },
                                   m_thirdPosition{ thirdPosition } {}
 
-  bool intersect(const Vec3f& rayOrig, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
 
 private:
   Vec3f m_firstPosition;
