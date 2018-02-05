@@ -23,14 +23,16 @@ public:
   std::size_t getHeight() const { return m_height; }
   Colorspace getColorspace() const { return m_colorspace; }
   const std::vector<uint8_t>& getData() const { return m_data; }
+  std::vector<uint8_t>& getData() { return m_data; }
   const uint8_t* getDataPtr() const { return m_data.data(); }
+
+  void write(const std::string& fileName);
 
 private:
   void readPng(std::ifstream& fileName);
   void read(const std::string& fileName);
 
   void writePng(std::ofstream& fileName);
-  void write(const std::string& fileName);
 
   std::size_t m_width {};
   std::size_t m_height {};
