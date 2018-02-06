@@ -10,7 +10,7 @@ class Window {
 public:
   Window(unsigned int width, unsigned int height, const std::string& name = "");
 
-  void mapImage(const Image& img) const;
+  void mapImage(std::unique_ptr<Image> img) const;
   bool show() const;
   void close() const;
 

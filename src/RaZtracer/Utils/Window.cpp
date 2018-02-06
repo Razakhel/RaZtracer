@@ -1,5 +1,6 @@
 #include <array>
 #include <iostream>
+#include <memory>
 
 #include "GL/glew.h"
 #include "RaZtracer/Utils/Window.hpp"
@@ -191,17 +192,17 @@ Window::Window(unsigned int width, unsigned int height, const std::string& name)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_eboIndex);
 }
 
-void Window::mapImage(const Image& img) const {
-  if (img.getColorspace() == RAZTRACER_COLORSPACE_GRAY || img.getColorspace() == RAZTRACER_COLORSPACE_GRAY_ALPHA) {
+void Window::mapImage(std::unique_ptr<Image> img) const {
+  if (img->getColorspace() == RAZTRACER_COLORSPACE_GRAY || img->getColorspace() == RAZTRACER_COLORSPACE_GRAY_ALPHA) {
     const std::array<GLint, 4> swizzle = { GL_RED,
                                            GL_RED,
                                            GL_RED,
-                                           (img.getColorspace() == RAZTRACER_COLORSPACE_GRAY ? GL_ONE : GL_GREEN) };
+                                           (img->getColorspace() == RAZTRACER_COLORSPACE_GRAY ? GL_ONE : GL_GREEN) };
     glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle.data());
   }
 
   GLenum imgFormat;
-  switch (img.getColorspace()) {
+  switch (img->getColorspace()) {
     case RAZTRACER_COLORSPACE_GRAY:
       imgFormat = GL_RED;
       break;
@@ -220,7 +221,7 @@ void Window::mapImage(const Image& img) const {
       break;
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, imgFormat, img.getWidth(), img.getHeight(), 0, imgFormat, GL_UNSIGNED_BYTE, img.getDataPtr());
+  glTexImage2D(GL_TEXTURE_2D, 0, imgFormat, img->getWidth(), img->getHeight(), 0, imgFormat, GL_UNSIGNED_BYTE, img->getDataPtr());
 }
 
 bool Window::show() const {

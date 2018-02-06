@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../Render/Camera.hpp"
+#include "../Utils/Image.hpp"
 #include "../Utils/Shape.hpp"
 
 class Scene {
@@ -16,7 +17,7 @@ public:
 
   void setCamera(std::unique_ptr<Camera> camera) { m_camera = std::move(camera); }
   void addShape(std::unique_ptr<Shape> shape) { m_shapes.emplace_back(std::move(shape)); }
-  void render(const std::string& fileName);
+  std::unique_ptr<Image> render(const std::string& fileName);
 
 private:
   std::unique_ptr<Camera> m_camera;
