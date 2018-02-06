@@ -4,7 +4,7 @@
 #include "RaZtracer/Render/Scene.hpp"
 #include "RaZtracer/Utils/Image.hpp"
 
-std::unique_ptr<Image> Scene::render(const std::string& fileName) {
+ImagePtr Scene::render(const std::string& fileName) {
   const Vec4f cameraPos(m_camera->getPosition(), 1.f);
   const Vec3f rayOrigin = m_camera->computePerspectiveMatrix().inverse() * m_camera->lookAt().inverse() * cameraPos;
 
@@ -12,7 +12,7 @@ std::unique_ptr<Image> Scene::render(const std::string& fileName) {
   const unsigned int imgHeight = m_camera->getFrameHeight();
   const float scaleFactor = std::tan(m_camera->getFieldOfView() / 2);
 
-  std::unique_ptr<Image> img = std::make_unique<Image>(imgWidth, imgHeight);
+  ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
 
   for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
     for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {

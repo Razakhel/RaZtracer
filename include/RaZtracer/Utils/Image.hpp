@@ -3,6 +3,7 @@
 #ifndef RAZTRACER_IMAGE_HPP
 #define RAZTRACER_IMAGE_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -39,5 +40,7 @@ private:
   Colorspace m_colorspace {};
   std::vector<uint8_t> m_data {};
 };
+
+using ImagePtr = std::unique_ptr<Image>;
 
 #endif // RAZTRACER_IMAGE_HPP

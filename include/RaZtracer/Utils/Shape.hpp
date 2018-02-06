@@ -3,6 +3,8 @@
 #ifndef RAZTRACER_SHAPE_HPP
 #define RAZTRACER_SHAPE_HPP
 
+#include <memory>
+
 #include "../Math/Vector.hpp"
 
 class Shape {
@@ -60,5 +62,7 @@ private:
   Vec3f m_secondPosition;
   Vec3f m_thirdPosition;
 };
+
+using ShapePtr = std::unique_ptr<Shape>;
 
 #endif // RAZTRACER_SHAPE_HPP

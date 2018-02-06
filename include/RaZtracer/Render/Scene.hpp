@@ -15,13 +15,16 @@ class Scene {
 public:
   Scene() = default;
 
-  void setCamera(std::unique_ptr<Camera> camera) { m_camera = std::move(camera); }
-  void addShape(std::unique_ptr<Shape> shape) { m_shapes.emplace_back(std::move(shape)); }
-  std::unique_ptr<Image> render(const std::string& fileName);
+  const std::vector<ShapePtr>& getShapes() const { return m_shapes; }
+
+  void setCamera(CameraPtr camera) { m_camera = std::move(camera); }
+
+  void addShape(ShapePtr shape) { m_shapes.emplace_back(std::move(shape)); }
+  ImagePtr render(const std::string& fileName);
 
 private:
-  std::unique_ptr<Camera> m_camera;
-  std::vector<std::unique_ptr<Shape>> m_shapes;
+  CameraPtr m_camera;
+  std::vector<ShapePtr> m_shapes;
 };
 
 #endif // RAZTRACER_SCENE_HPP
