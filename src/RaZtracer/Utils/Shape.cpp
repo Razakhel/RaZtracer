@@ -35,12 +35,7 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const 
 
   float firstHitDist, secondHitDist;
 
-  if (!solveQuadratic(rayLength, rayDiff, sphereDist, firstHitDist, secondHitDist)) {
-    if (firstHitDist < 0)
-      return false;
-  }
-
-  return true;
+  return solveQuadratic(rayLength, rayDiff, sphereDist, firstHitDist, secondHitDist);
 }
 
 bool Cube::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const {
