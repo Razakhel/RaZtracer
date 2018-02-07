@@ -20,7 +20,7 @@ public:
   void setCamera(CameraPtr camera) { m_camera = std::move(camera); }
 
   void addShape(ShapePtr shape) { m_shapes.emplace_back(std::move(shape)); }
-  ImagePtr render(const std::string& fileName);
+  ImagePtr render();
 
 private:
   CameraPtr m_camera;

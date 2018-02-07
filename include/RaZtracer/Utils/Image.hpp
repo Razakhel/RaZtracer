@@ -7,17 +7,14 @@
 #include <string>
 #include <vector>
 
-enum Colorspace {
-  RAZTRACER_COLORSPACE_GRAY = 0,
-  RAZTRACER_COLORSPACE_GRAY_ALPHA,
-  RAZTRACER_COLORSPACE_RGB,
-  RAZTRACER_COLORSPACE_RGBA
-};
+enum Colorspace { RAZTRACER_COLORSPACE_GRAY = 0,
+                  RAZTRACER_COLORSPACE_GRAY_ALPHA,
+                  RAZTRACER_COLORSPACE_RGB,
+                  RAZTRACER_COLORSPACE_RGBA };
 
 class Image {
 public:
-  Image() : m_data(3, 255) {}
-  Image(std::size_t width, std::size_t height) : m_width{ width }, m_height{ height }, m_data(width * height) {}
+  Image(std::size_t width, std::size_t height) : m_width{ width }, m_height{ height }, m_data(width * height * 3) {}
   explicit Image(const std::string& fileName) { read(fileName); }
 
   std::size_t getWidth() const { return m_width; }
@@ -37,7 +34,7 @@ private:
 
   std::size_t m_width {};
   std::size_t m_height {};
-  Colorspace m_colorspace {};
+  Colorspace m_colorspace = RAZTRACER_COLORSPACE_RGB;
   std::vector<uint8_t> m_data {};
 };
 
