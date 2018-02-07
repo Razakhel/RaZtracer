@@ -26,7 +26,7 @@ bool solveQuadratic(float a, float b, float c, float& firstHitDist, float& secon
 
 } // namespace
 
-bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const {
+bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
   const Vec3f sphereDirection = rayOrigin - m_center;
 
   const float rayLength = rayDirection.dot(rayDirection);
@@ -35,16 +35,18 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const 
 
   float firstHitDist, secondHitDist;
 
+  hit.color = m_color;
+
   return solveQuadratic(rayLength, rayDiff, sphereDist, firstHitDist, secondHitDist);
 }
 
-bool Cube::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const {
+bool Cube::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
 
 
   return false;
 }
 
-bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection/*, float maxDepth*/) const {
+bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
 
 
   return false;

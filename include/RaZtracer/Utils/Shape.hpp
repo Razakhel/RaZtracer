@@ -6,12 +6,13 @@
 #include <memory>
 
 #include "../Math/Vector.hpp"
+#include "../Utils/RayHit.hpp"
 
 class Shape {
 public:
   Shape(const Vec3f& color, float transparency) : m_color{ color }, m_transparency{ transparency } {}
 
-  virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const = 0;
+  virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const = 0;
 
 protected:
   Vec3f m_color;
@@ -24,7 +25,7 @@ public:
   Sphere(const Vec3f& center, float radius = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.f, 0.5f }), float transparency = 1.f)
     : Shape(color, transparency), m_center{ center }, m_radius{ radius } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
 
 private:
   Vec3f m_center;
@@ -37,7 +38,7 @@ public:
   Cube(const Vec3f& center, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
     : Shape(color, transparency), m_center{ center }, m_size{ size } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
 
 private:
   Vec3f m_center;
@@ -55,7 +56,7 @@ public:
                                   m_secondPosition{ secondPosition },
                                   m_thirdPosition{ thirdPosition } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
 
 private:
   Vec3f m_firstPosition;
