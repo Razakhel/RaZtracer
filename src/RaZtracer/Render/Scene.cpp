@@ -1,4 +1,4 @@
-#include <iostream>
+#include <limits>
 
 #include "RaZtracer/Math/Matrix.hpp"
 #include "RaZtracer/Render/Scene.hpp"
@@ -22,19 +22,23 @@ ImagePtr Scene::render() {
 
     for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
       const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
-      const Vec4f screenSpaceDirection({ (2 * ((widthIndex + 0.5f) / imgWidth) - 1) * m_camera->getAspectRatio() * scaleFactor,
-                                         (1 - 2 * ((heightIndex + 0.5f) / imgHeight)) * scaleFactor,
+      const Vec4f screenSpaceDirection({ (2 * (widthIndex + 0.5f) / imgWidth - 1) * m_camera->getAspectRatio() * scaleFactor,
+                                         (1 - 2 * (heightIndex + 0.5f) / imgHeight) * scaleFactor,
                                          -1.f,
                                           1.f });
       const Vec4f worldSpaceDirection = invProjectionMat * invViewMat * screenSpaceDirection;
       const Vec3f rayDirection = (worldSpaceDirection / worldSpaceDirection[3]).normalize();
+
+      float closestHitDistance = std::numeric_limits<float>::infinity();
       RayHit hit {};
 
       for (const auto& shape : m_shapes) {
-        if (shape->intersect(rayOrigin, rayDirection, hit)) {
+        if (shape->intersect(rayOrigin, rayDirection, hit) && hit.distance < closestHitDistance) {
           img->getData()[finalIndex]     = static_cast<uint8_t>(hit.color[0] * 255);
           img->getData()[finalIndex + 1] = static_cast<uint8_t>(hit.color[1] * 255);
           img->getData()[finalIndex + 2] = static_cast<uint8_t>(hit.color[2] * 255);
+
+          closestHitDistance = hit.distance;
         }
       }
     }
