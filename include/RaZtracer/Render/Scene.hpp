@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../Render/Camera.hpp"
+#include "../Render/Light.hpp"
 #include "../Utils/Image.hpp"
 #include "../Utils/Shape.hpp"
 
@@ -20,11 +21,14 @@ public:
   void setCamera(CameraPtr camera) { m_camera = std::move(camera); }
 
   void addShape(ShapePtr shape) { m_shapes.emplace_back(std::move(shape)); }
+  void addLight(LightPtr light) { m_lights.emplace_back(std::move(light)); }
+
   ImagePtr render();
 
 private:
   CameraPtr m_camera;
   std::vector<ShapePtr> m_shapes;
+  std::vector<LightPtr> m_lights;
 };
 
 #endif // RAZTRACER_SCENE_HPP
