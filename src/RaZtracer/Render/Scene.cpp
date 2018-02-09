@@ -31,16 +31,18 @@ ImagePtr Scene::render() {
 
       float closestHitDistance = std::numeric_limits<float>::infinity();
       RayHit hit {};
+      Vec3f finalColor {};
 
       for (const auto& shape : m_shapes) {
-        if (shape->intersect(rayOrigin, rayDirection, hit) && hit.distance < closestHitDistance) {
-          img->getData()[finalIndex]     = static_cast<uint8_t>(hit.color[0] * 255);
-          img->getData()[finalIndex + 1] = static_cast<uint8_t>(hit.color[1] * 255);
-          img->getData()[finalIndex + 2] = static_cast<uint8_t>(hit.color[2] * 255);
-
+        if (shape->intersect(rayOrigin, rayDirection, &hit) && hit.distance < closestHitDistance) {
+          finalColor = hit.material.color;
           closestHitDistance = hit.distance;
         }
       }
+
+      img->getData()[finalIndex]     = static_cast<uint8_t>(finalColor[0] * 255);
+      img->getData()[finalIndex + 1] = static_cast<uint8_t>(finalColor[1] * 255);
+      img->getData()[finalIndex + 2] = static_cast<uint8_t>(finalColor[2] * 255);
     }
   }
 
