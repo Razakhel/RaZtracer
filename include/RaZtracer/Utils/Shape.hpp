@@ -6,17 +6,17 @@
 #include <memory>
 
 #include "../Math/Vector.hpp"
+#include "../Render/Material.hpp"
 #include "../Utils/RayHit.hpp"
 
 class Shape {
 public:
-  Shape(const Vec3f& color, float transparency) : m_color{ color }, m_transparency{ transparency } {}
+  Shape(const Vec3f& color, float transparency) : m_material{ color, transparency } {}
 
-  virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const = 0;
+  virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit = nullptr) const = 0;
 
 protected:
-  Vec3f m_color;
-  float m_transparency;
+  Material m_material;
 };
 
 class Sphere : public Shape {
@@ -25,20 +25,20 @@ public:
   Sphere(const Vec3f& center, float radius = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.f, 0.5f }), float transparency = 1.f)
     : Shape(color, transparency), m_center{ center }, m_radius{ radius } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
   Vec3f m_center;
   float m_radius;
 };
 
-class Cube : public Shape {
+class Box : public Shape {
 public:
-  Cube() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_center{ Vec3f(0.f) }, m_size{ 1.f } {}
-  Cube(const Vec3f& center, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
+  Box() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_center{ Vec3f(0.f) }, m_size{ 1.f } {}
+  Box(const Vec3f& center, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
     : Shape(color, transparency), m_center{ center }, m_size{ size } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
   Vec3f m_center;
@@ -56,7 +56,8 @@ public:
                                   m_secondPosition{ secondPosition },
                                   m_thirdPosition{ thirdPosition } {}
 
-  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const;
+  Vec3f computeNormal() const;
+  bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
   Vec3f m_firstPosition;
