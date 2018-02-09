@@ -26,7 +26,7 @@ bool solveQuadratic(float a, float b, float c, float& firstHitDist, float& secon
 
 } // namespace
 
-bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
+bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
   const Vec3f sphereDistance = rayOrigin - m_center;
 
   const float rayLength = rayDirection.dot(rayDirection);
@@ -38,9 +38,6 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit
   if (!solveQuadratic(rayLength, rayDiff, sphereDiff, firstHitDist, secondHitDist))
     return false;
 
-  if (firstHitDist > secondHitDist)
-    std::swap(firstHitDist, secondHitDist);
-
   if (firstHitDist < 0) {
     firstHitDist = secondHitDist;
 
@@ -48,21 +45,68 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit
       return false;
   }
 
-  hit.position = rayOrigin + rayDirection * firstHitDist;
-  hit.color = m_color;
-  hit.distance = firstHitDist;
+  if (hit) {
+    hit->position = rayOrigin + rayDirection * firstHitDist;
+    hit->material = m_material;
+    hit->distance = firstHitDist;
+  }
 
   return true;
 }
 
-bool Cube::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
+bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
 
 
   return false;
 }
 
-bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit& hit) const {
+Vec3f Triangle::computeNormal() const {
+  const Vec3f firstEdge = m_secondPosition - m_firstPosition;
+  const Vec3f secondEdge = m_thirdPosition - m_firstPosition;
+  const Vec3f normal = firstEdge.cross(secondEdge);
 
+  return normal.normalize();
+}
 
-  return false;
+bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
+  const Vec3f normal = computeNormal();
+  const float incidentAngle = rayDirection.dot(normal);
+
+  if (std::abs(incidentAngle) < std::numeric_limits<float>::epsilon())
+    return false;
+
+  const float planeDist = m_firstPosition.dot(rayOrigin);
+  const float hitDistance = -(rayOrigin.dot(normal) + planeDist) / incidentAngle;
+
+  if (hitDistance < 0)
+    return false;
+
+  const Vec3f hitPosition = rayOrigin + rayDirection * hitDistance;
+
+  const Vec3f firstEdge = m_secondPosition - m_firstPosition;
+  const Vec3f firstHitDir = hitPosition - m_firstPosition;
+
+  if ((firstEdge.cross(firstHitDir)).dot(normal) < 0)
+    return false;
+
+  const Vec3f secondEdge = m_thirdPosition - m_secondPosition;
+  const Vec3f secondHitDir = hitPosition - m_secondPosition;
+
+  if ((secondEdge.cross(secondHitDir)).dot(normal) < 0)
+    return false;
+
+  const Vec3f thirdEdge = m_firstPosition - m_thirdPosition;
+  const Vec3f thirdHitDir = hitPosition - m_thirdPosition;
+
+  if ((thirdEdge.cross(thirdHitDir)).dot(normal) < 0)
+    return false;
+
+  if (hit) {
+    hit->position = hitPosition;
+    hit->normal = normal;
+    hit->material = m_material;
+    hit->distance = hitDistance;
+  }
+
+  return true;
 }
