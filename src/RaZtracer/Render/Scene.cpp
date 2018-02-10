@@ -40,6 +40,23 @@ ImagePtr Scene::render() {
         }
       }
 
+      if (closestHitDistance < std::numeric_limits<float>::infinity()) {
+        float lightFactor = 1.f;
+
+        for (const auto& light : m_lights) {
+          const Vec3f lightDir = (hit.position - light->getPosition()).normalize();
+
+          for (const auto& shapeObstacle : m_shapes) {
+            if (shapeObstacle->intersect(hit.position, lightDir)) {
+              lightFactor -= 1.f / m_lights.size();
+              break;
+            }
+          }
+        }
+
+        finalColor *= lightFactor;
+      }
+
       img->getData()[finalIndex]     = static_cast<uint8_t>(finalColor[0] * 255);
       img->getData()[finalIndex + 1] = static_cast<uint8_t>(finalColor[1] * 255);
       img->getData()[finalIndex + 2] = static_cast<uint8_t>(finalColor[2] * 255);
