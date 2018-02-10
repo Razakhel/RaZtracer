@@ -19,12 +19,15 @@ protected:
   Material m_material;
 };
 
+using ShapePtr = std::unique_ptr<Shape>;
+
 class Sphere : public Shape {
 public:
   Sphere() : Shape(Vec3f({ 0.5f, 0.f, 0.5f }), 1.f), m_center{ Vec3f(0.f) }, m_radius{ 1.f } {}
   Sphere(const Vec3f& center, float radius = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.f, 0.5f }), float transparency = 1.f)
     : Shape(color, transparency), m_center{ center }, m_radius{ radius } {}
 
+  Vec3f computeNormal(const Vec3f& hitPosition) const { return (m_center - hitPosition).normalize(); }
   bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
@@ -34,15 +37,16 @@ private:
 
 class Box : public Shape {
 public:
-  Box() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_center{ Vec3f(0.f) }, m_size{ 1.f } {}
-  Box(const Vec3f& center, float size = 1.f, const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
-    : Shape(color, transparency), m_center{ center }, m_size{ size } {}
+  Box() : Shape(Vec3f({ 0.5f, 0.5f, 0.f }), 1.f), m_topRightPosition{ Vec3f(1.f) }, m_bottomLeftPosition{ Vec3f(-1.f) } {}
+  Box(const Vec3f& topRightPosition, const Vec3f& bottomLeftPosition,
+      const Vec3f& color = Vec3f({ 0.5f, 0.5f, 0.f }), float transparency = 1.f)
+    : Shape(color, transparency), m_topRightPosition{ topRightPosition }, m_bottomLeftPosition{ bottomLeftPosition } {}
 
   bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
-  Vec3f m_center;
-  float m_size;
+  Vec3f m_topRightPosition;
+  Vec3f m_bottomLeftPosition;
 };
 
 class Triangle : public Shape {
@@ -64,7 +68,5 @@ private:
   Vec3f m_secondPosition;
   Vec3f m_thirdPosition;
 };
-
-using ShapePtr = std::unique_ptr<Shape>;
 
 #endif // RAZTRACER_SHAPE_HPP

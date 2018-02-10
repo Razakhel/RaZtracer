@@ -47,6 +47,7 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit
 
   if (hit) {
     hit->position = rayOrigin + rayDirection * firstHitDist;
+    hit->normal = computeNormal(hit->position);
     hit->material = m_material;
     hit->distance = firstHitDist;
   }
@@ -55,9 +56,49 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit
 }
 
 bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
+  float minWidthDist = (m_bottomLeftPosition[0] - rayOrigin[0]) / rayDirection[0];
+  float maxWidthDist = (m_topRightPosition[0] - rayOrigin[0]) / rayDirection[0];
 
+  if (minWidthDist > maxWidthDist)
+    std::swap(minWidthDist, maxWidthDist);
 
-  return false;
+  float minHeightDist = (m_bottomLeftPosition[1] - rayOrigin[1]) / rayDirection[1];
+  float maxHeightDist = (m_topRightPosition[1] - rayOrigin[1]) / rayDirection[1];
+
+  if (minHeightDist > maxHeightDist)
+    std::swap(minHeightDist, maxHeightDist);
+
+  if ((minWidthDist > maxHeightDist) || (minHeightDist > maxWidthDist))
+    return false;
+
+  if (minHeightDist > minWidthDist)
+    minWidthDist = minHeightDist;
+
+  if (maxHeightDist < maxWidthDist)
+    maxWidthDist = maxHeightDist;
+
+  float minDepthDist = (m_bottomLeftPosition[2] - rayOrigin[2]) / rayDirection[2];
+  float maxDepthDist = (m_topRightPosition[2] - rayOrigin[2]) / rayDirection[2];
+
+  if (minDepthDist > maxDepthDist)
+    std::swap(minDepthDist, maxDepthDist);
+
+  if ((minWidthDist > maxDepthDist) || (minDepthDist > maxWidthDist))
+    return false;
+
+  if (minDepthDist > minWidthDist)
+    minWidthDist = minDepthDist;
+
+  if (maxDepthDist < maxWidthDist)
+    maxWidthDist = maxDepthDist;
+
+  if (hit) {
+    hit->position = rayOrigin + rayDirection * maxWidthDist;
+    hit->material = m_material;
+    hit->distance = maxWidthDist;
+  }
+
+  return true;
 }
 
 Vec3f Triangle::computeNormal() const {
