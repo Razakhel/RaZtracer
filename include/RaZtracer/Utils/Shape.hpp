@@ -11,12 +11,12 @@
 
 class Shape {
 public:
-  Shape(const Vec3f& color, float transparency) : m_material{ color, transparency } {}
+  Shape(const Vec3f& color, float transparency);
 
   virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit = nullptr) const = 0;
 
 protected:
-  Material m_material;
+  MaterialPtr m_material;
 };
 
 using ShapePtr = std::unique_ptr<Shape>;
@@ -58,15 +58,23 @@ public:
            const Vec3f& color = Vec3f({ 0.f, 0.5f, 0.5f }), float transparency = 1.f)
     : Shape(color, transparency), m_firstPosition{ firstPosition },
                                   m_secondPosition{ secondPosition },
-                                  m_thirdPosition{ thirdPosition } {}
+                                  m_thirdPosition{ thirdPosition } { computeNormal(); }
+  Triangle(const Vec3f& firstPosition, const Vec3f& secondPosition, const Vec3f& thirdPosition, const Vec3f& normal,
+           const Vec3f& color = Vec3f({ 0.f, 0.5f, 0.5f }), float transparency = 1.f)
+    : Shape(color, transparency), m_firstPosition{ firstPosition },
+                                  m_secondPosition{ secondPosition },
+                                  m_thirdPosition{ thirdPosition },
+                                  m_normal{ normal } {}
 
-  Vec3f computeNormal() const;
+  void computeNormal();
   bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
   Vec3f m_firstPosition;
   Vec3f m_secondPosition;
   Vec3f m_thirdPosition;
+
+  Vec3f m_normal;
 };
 
 #endif // RAZTRACER_SHAPE_HPP

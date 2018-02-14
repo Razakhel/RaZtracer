@@ -26,6 +26,12 @@ bool solveQuadratic(float a, float b, float c, float& firstHitDist, float& secon
 
 } // namespace
 
+Shape::Shape(const Vec3f& color, float transparency) {
+  m_material = std::make_unique<Material>();
+  m_material->setDiffuseColor(color);
+  m_material->setTransparency(transparency);
+}
+
 bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
   const Vec3f sphereDistance = rayOrigin - m_center;
 
@@ -101,23 +107,20 @@ bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* h
   return true;
 }
 
-Vec3f Triangle::computeNormal() const {
+void Triangle::computeNormal() {
   const Vec3f firstEdge = m_secondPosition - m_firstPosition;
   const Vec3f secondEdge = m_thirdPosition - m_firstPosition;
-  const Vec3f normal = firstEdge.cross(secondEdge);
-
-  return normal.normalize();
+  m_normal = (firstEdge.cross(secondEdge)).normalize();
 }
 
 bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
-  const Vec3f normal = computeNormal();
-  const float incidentAngle = rayDirection.dot(normal);
+  const float incidentAngle = rayDirection.dot(m_normal);
 
   if (std::abs(incidentAngle) < std::numeric_limits<float>::epsilon())
     return false;
 
   const float planeDist = m_firstPosition.dot(rayOrigin);
-  const float hitDistance = -(rayOrigin.dot(normal) + planeDist) / incidentAngle;
+  const float hitDistance = -(rayOrigin.dot(m_normal) + planeDist) / incidentAngle;
 
   if (hitDistance < 0)
     return false;
@@ -127,24 +130,24 @@ bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayH
   const Vec3f firstEdge = m_secondPosition - m_firstPosition;
   const Vec3f firstHitDir = hitPosition - m_firstPosition;
 
-  if ((firstEdge.cross(firstHitDir)).dot(normal) < 0)
+  if ((firstEdge.cross(firstHitDir)).dot(m_normal) < 0)
     return false;
 
   const Vec3f secondEdge = m_thirdPosition - m_secondPosition;
   const Vec3f secondHitDir = hitPosition - m_secondPosition;
 
-  if ((secondEdge.cross(secondHitDir)).dot(normal) < 0)
+  if ((secondEdge.cross(secondHitDir)).dot(m_normal) < 0)
     return false;
 
   const Vec3f thirdEdge = m_firstPosition - m_thirdPosition;
   const Vec3f thirdHitDir = hitPosition - m_thirdPosition;
 
-  if ((thirdEdge.cross(thirdHitDir)).dot(normal) < 0)
+  if ((thirdEdge.cross(thirdHitDir)).dot(m_normal) < 0)
     return false;
 
   if (hit) {
     hit->position = hitPosition;
-    hit->normal = normal;
+    hit->normal = m_normal;
     hit->material = m_material;
     hit->distance = hitDistance;
   }
