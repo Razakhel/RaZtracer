@@ -9,7 +9,7 @@ struct RayHit {
   Vec3f position;
   Vec3f normal;
   Vec2f texcoords;
-  Material material;
+  MaterialPtr material;
   float distance;
 };
 
