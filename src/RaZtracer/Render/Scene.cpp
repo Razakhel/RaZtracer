@@ -2,7 +2,6 @@
 
 #include "RaZtracer/Math/Matrix.hpp"
 #include "RaZtracer/Render/Scene.hpp"
-#include "RaZtracer/Utils/Image.hpp"
 #include "RaZtracer/Utils/RayHit.hpp"
 
 ImagePtr Scene::render() {
@@ -35,7 +34,7 @@ ImagePtr Scene::render() {
 
       for (const auto& shape : m_shapes) {
         if (shape->intersect(rayOrigin, rayDirection, &hit) && hit.distance < closestHitDistance) {
-          finalColor = hit.material.color;
+          finalColor = hit.material->getDiffuseColor();
           closestHitDistance = hit.distance;
         }
       }

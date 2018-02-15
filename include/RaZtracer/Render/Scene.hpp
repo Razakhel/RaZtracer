@@ -10,6 +10,7 @@
 #include "../Render/Camera.hpp"
 #include "../Render/Light.hpp"
 #include "../Utils/Image.hpp"
+#include "../Utils/ModelLoader.hpp"
 #include "../Utils/Shape.hpp"
 
 class Scene {
@@ -22,6 +23,7 @@ public:
 
   void addShape(ShapePtr shape) { m_shapes.emplace_back(std::move(shape)); }
   void addLight(LightPtr light) { m_lights.emplace_back(std::move(light)); }
+  void addModel(const std::string& fileName) { ModelLoader::importModel(fileName, m_shapes); }
 
   ImagePtr render();
 
