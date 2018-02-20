@@ -119,7 +119,7 @@ bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayH
   if (std::abs(incidentAngle) < std::numeric_limits<float>::epsilon())
     return false;
 
-  const float planeDist = m_firstPosition.dot(rayOrigin);
+  const float planeDist = m_firstPosition.dot(m_normal);
   const float hitDistance = -(rayOrigin.dot(m_normal) + planeDist) / incidentAngle;
 
   if (hitDistance < 0)
