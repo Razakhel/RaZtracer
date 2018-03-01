@@ -27,6 +27,6 @@ private:
   std::vector<MaterialPtr> m_materials {};
 };
 
-using MeshPtr = std::shared_ptr<Mesh>;
+using MeshPtr = std::unique_ptr<Mesh>;
 
 #endif // RAZTRACER_MESH_HPP
