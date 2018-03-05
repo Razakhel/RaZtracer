@@ -46,7 +46,7 @@ ImagePtr Scene::render() {
           const Vec3f lightDir = (hit.position - light->getPosition()).normalize();
 
           for (const auto& shapeObstacle : m_shapes) {
-            if (shapeObstacle->intersect(hit.position, lightDir)) {
+            if (shapeObstacle->intersect(hit.position + hit.normal * 0.0001f, lightDir)) {
               lightFactor -= 1.f / m_lights.size();
               break;
             }
