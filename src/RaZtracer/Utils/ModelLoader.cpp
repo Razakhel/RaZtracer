@@ -149,6 +149,7 @@ void importObj(std::ifstream& file, std::vector<ShapePtr>& shapes) {
       shapes.emplace_back(std::make_unique<Triangle>(positions[firstPosIndex],
                                                      positions[secondPosIndex],
                                                      positions[thirdPosIndex]));
+      shapes.back()->setMaterial(mesh->getMaterials()[mesh->getSubmeshes()[submeshIndex]->getMaterialIndex()]);
     }
   }
 }

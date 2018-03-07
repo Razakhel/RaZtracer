@@ -8,10 +8,13 @@
 #include "../Math/Vector.hpp"
 #include "../Render/Material.hpp"
 #include "../Utils/RayHit.hpp"
+#include "../Utils/Vertex.hpp"
 
 class Shape {
 public:
   Shape(const Vec3f& color, float transparency);
+
+  void setMaterial(MaterialPtr material) { m_material = material; }
 
   virtual bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit = nullptr) const = 0;
 
@@ -51,31 +54,27 @@ private:
 
 class Triangle : public Shape {
 public:
-  Triangle() : Shape(Vec3f({ 0.f, 0.5f, 0.5f }), 1.f), m_firstPosition{ Vec3f({ -0.5f, -0.5f, 0.f }) },
-                                                       m_secondPosition{ Vec3f({ 0.f, 0.5f, 0.f }) },
-                                                       m_thirdPosition{ Vec3f({ 0.5f, -0.5f, 0.f }) },
-                                                       m_normal{ Vec3f({ 0.f, 0.f, 1.f }) } {}
+  Triangle() : Shape(Vec3f({ 0.f, 0.5f, 0.5f }), 1.f), m_firstVert(Vec3f({ -0.5f, -0.5f, 0.f })),
+                                                       m_secondVert(Vec3f({ 0.f, 0.5f, 0.f })),
+                                                       m_thirdVert(Vec3f({ 0.5f, -0.5f, 0.f })) {}
   Triangle(const Vec3f& firstPosition, const Vec3f& secondPosition, const Vec3f& thirdPosition,
            const Vec3f& color = Vec3f({ 0.f, 0.5f, 0.5f }), float transparency = 1.f)
-    : Shape(color, transparency), m_firstPosition{ firstPosition },
-                                  m_secondPosition{ secondPosition },
-                                  m_thirdPosition{ thirdPosition } { computeNormal(); }
+    : Shape(color, transparency), m_firstVert(firstPosition),
+                                  m_secondVert(secondPosition),
+                                  m_thirdVert(thirdPosition) { computeNormal(); }
   Triangle(const Vec3f& firstPosition, const Vec3f& secondPosition, const Vec3f& thirdPosition, const Vec3f& normal,
            const Vec3f& color = Vec3f({ 0.f, 0.5f, 0.5f }), float transparency = 1.f)
-    : Shape(color, transparency), m_firstPosition{ firstPosition },
-                                  m_secondPosition{ secondPosition },
-                                  m_thirdPosition{ thirdPosition },
-                                  m_normal{ normal } {}
+    : Shape(color, transparency), m_firstVert(firstPosition, normal),
+                                  m_secondVert(secondPosition, normal),
+                                  m_thirdVert(thirdPosition, normal) {}
 
   void computeNormal();
   bool intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const;
 
 private:
-  Vec3f m_firstPosition;
-  Vec3f m_secondPosition;
-  Vec3f m_thirdPosition;
-
-  Vec3f m_normal;
+  Vertex m_firstVert;
+  Vertex m_secondVert;
+  Vertex m_thirdVert;
 };
 
 #endif // RAZTRACER_SHAPE_HPP
