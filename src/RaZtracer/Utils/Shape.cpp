@@ -27,7 +27,7 @@ bool solveQuadratic(float a, float b, float c, float& firstHitDist, float& secon
 } // namespace
 
 Shape::Shape(const Vec3f& color, float transparency) {
-  m_material = std::make_unique<Material>();
+  m_material = std::make_shared<Material>();
   m_material->setDiffuseColor(color);
   m_material->setTransparency(transparency);
 }
@@ -108,48 +108,51 @@ bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* h
 }
 
 void Triangle::computeNormal() {
-  const Vec3f firstEdge = m_secondPosition - m_firstPosition;
-  const Vec3f secondEdge = m_thirdPosition - m_firstPosition;
-  m_normal = (firstEdge.cross(secondEdge)).normalize();
+  const Vec3f firstEdge = m_secondVert.position - m_firstVert.position;
+  const Vec3f secondEdge = m_thirdVert.position - m_firstVert.position;
+  const Vec3f normal = (firstEdge.cross(secondEdge)).normalize();
+
+  m_firstVert.normal = normal;
+  m_secondVert.normal = normal;
+  m_thirdVert.normal = normal;
 }
 
 bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
-  const float incidentAngle = rayDirection.dot(m_normal);
+  const Vec3f firstEdge = m_secondVert.position - m_firstVert.position;
+  const Vec3f secondEdge = m_thirdVert.position - m_firstVert.position;
+  const Vec3f pVec = rayDirection.cross(secondEdge);
+  const float determinant = firstEdge.dot(pVec);
 
-  if (std::abs(incidentAngle) < std::numeric_limits<float>::epsilon())
+  if (std::abs(determinant) < std::numeric_limits<float>::epsilon())
     return false;
 
-  const float planeDist = m_firstPosition.dot(m_normal);
-  const float hitDistance = -(rayOrigin.dot(m_normal) + planeDist) / incidentAngle;
+  const float invDeterm = 1 / determinant;
 
-  if (hitDistance < 0)
+  const Vec3f invPlaneDir = rayOrigin - m_firstVert.position;
+  const float firstBaryCoord = invPlaneDir.dot(pVec) * invDeterm;
+
+  if (firstBaryCoord < 0 || firstBaryCoord > 1)
     return false;
 
-  const Vec3f hitPosition = rayOrigin + rayDirection * hitDistance;
+  const Vec3f qVec = invPlaneDir.cross(firstEdge);
+  const float secondBaryCoord = qVec.dot(rayDirection) * invDeterm;
 
-  const Vec3f firstEdge = m_secondPosition - m_firstPosition;
-  const Vec3f firstHitDir = hitPosition - m_firstPosition;
-
-  if ((firstEdge.cross(firstHitDir)).dot(m_normal) < 0)
+  if (secondBaryCoord < 0 || firstBaryCoord + secondBaryCoord > 1)
     return false;
 
-  const Vec3f secondEdge = m_thirdPosition - m_secondPosition;
-  const Vec3f secondHitDir = hitPosition - m_secondPosition;
-
-  if ((secondEdge.cross(secondHitDir)).dot(m_normal) < 0)
-    return false;
-
-  const Vec3f thirdEdge = m_firstPosition - m_thirdPosition;
-  const Vec3f thirdHitDir = hitPosition - m_thirdPosition;
-
-  if ((thirdEdge.cross(thirdHitDir)).dot(m_normal) < 0)
-    return false;
+  const float thirdBaryCoord = 1 - (firstBaryCoord + secondBaryCoord);
+  const float hitDist = secondEdge.dot(qVec) * invDeterm;
 
   if (hit) {
-    hit->position = hitPosition;
-    hit->normal = m_normal;
+    hit->position = rayOrigin + rayDirection * hitDist;
+    hit->normal = m_firstVert.normal * firstBaryCoord
+                + m_secondVert.normal * secondBaryCoord
+                + m_thirdVert.normal * thirdBaryCoord;
+    hit->texcoords = m_firstVert.texcoords * firstBaryCoord
+                   + m_secondVert.texcoords * secondBaryCoord
+                   + m_thirdVert.texcoords * thirdBaryCoord;
     hit->material = m_material;
-    hit->distance = hitDistance;
+    hit->distance = hitDist;
   }
 
   return true;
