@@ -104,7 +104,7 @@ bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* h
     hit->distance = maxWidthDist;
   }
 
-  return true;
+  return (maxWidthDist > 0);
 }
 
 void Triangle::computeNormal() {
@@ -145,15 +145,15 @@ bool Triangle::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayH
 
   if (hit) {
     hit->position = rayOrigin + rayDirection * hitDist;
-    hit->normal = m_firstVert.normal * firstBaryCoord
-                + m_secondVert.normal * secondBaryCoord
-                + m_thirdVert.normal * thirdBaryCoord;
-    hit->texcoords = m_firstVert.texcoords * firstBaryCoord
-                   + m_secondVert.texcoords * secondBaryCoord
-                   + m_thirdVert.texcoords * thirdBaryCoord;
+    hit->normal = (m_firstVert.normal * thirdBaryCoord
+                + m_secondVert.normal * firstBaryCoord
+                + m_thirdVert.normal * secondBaryCoord).normalize();
+    hit->texcoords = m_firstVert.texcoords * thirdBaryCoord
+                   + m_secondVert.texcoords * firstBaryCoord
+                   + m_thirdVert.texcoords * secondBaryCoord;
     hit->material = m_material;
     hit->distance = hitDist;
   }
 
-  return true;
+  return (hitDist > 0);
 }
