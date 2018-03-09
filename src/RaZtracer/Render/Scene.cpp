@@ -26,35 +26,37 @@ ImagePtr Scene::render() {
                                          -1.f,
                                           1.f });
       const Vec4f worldSpaceDirection = invProjectionMat * invViewMat * screenSpaceDirection;
-      const Vec3f rayDirection = (worldSpaceDirection / worldSpaceDirection[3]).normalize();
+      const Vec3f rayDirection = -(worldSpaceDirection / worldSpaceDirection[3]).normalize();
 
-      float closestHitDistance = std::numeric_limits<float>::infinity();
       RayHit hit {};
+      RayHit closestHit {};
       Vec3f finalColor {};
 
+      closestHit.distance = std::numeric_limits<float>::infinity();
+
       for (const auto& shape : m_shapes) {
-        if (shape->intersect(rayOrigin, rayDirection, &hit) && hit.distance < closestHitDistance) {
-          finalColor = hit.material->getDiffuseColor();
-          closestHitDistance = hit.distance;
-        }
+        if (shape->intersect(rayOrigin, rayDirection, &hit) && hit.distance < closestHit.distance)
+          closestHit = hit;
       }
 
-      if (closestHitDistance < std::numeric_limits<float>::infinity()) {
+      if (closestHit.distance < std::numeric_limits<float>::infinity()) {
         float lightFactor = 1.f;
 
         for (const auto& light : m_lights) {
-          const Vec3f lightDir = (light->getPosition() - hit.position).normalize();
+          const Vec3f lightDir = (light->getPosition() - closestHit.position).normalize();
 
           for (const auto& shapeObstacle : m_shapes) {
-            if (shapeObstacle->intersect(hit.position + hit.normal * 0.0001f, lightDir)) {
+            if (shapeObstacle->intersect(closestHit.position + closestHit.normal * 0.0001f, lightDir)) {
               lightFactor -= 1.f / m_lights.size();
               break;
             }
           }
         }
 
-        finalColor *= lightFactor;
+        finalColor = closestHit.material->getDiffuseColor() * lightFactor;
       }
+
+      finalColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f);
 
       img->getData()[finalIndex]     = static_cast<uint8_t>(finalColor[0] * 255);
       img->getData()[finalIndex + 1] = static_cast<uint8_t>(finalColor[1] * 255);
