@@ -10,6 +10,9 @@ class Window {
 public:
   Window(unsigned int width, unsigned int height, const std::string& name = "");
 
+  unsigned int getWidth() const { return m_width; }
+  unsigned int getHeight() const { return m_height; }
+
   void mapImage(std::unique_ptr<Image> img) const;
   bool show() const;
   void close() const;
@@ -17,6 +20,8 @@ public:
   ~Window() { close(); }
 
 private:
+  unsigned int m_width;
+  unsigned int m_height;
   GLFWwindow* m_window;
 
   GLuint m_vaoIndex;

@@ -13,6 +13,7 @@ public:
   explicit Material(const std::string& fileName) { m_diffuseMap = std::make_unique<Image>(fileName); }
 
   const Vec3f& getDiffuseColor() const { return m_diffuseColor; }
+  Vec3f& getDiffuseColor() { return m_diffuseColor; }
   const Image* getAmbientMap() const { return m_ambientMap.get(); }
   const Image* getDiffuseMap() const { return m_diffuseMap.get(); }
   const Image* getSpecularMap() const { return m_specularMap.get(); }

@@ -45,7 +45,7 @@ Vector<T, Size> Vector<T, Size>::cross(const Vector<T, Size>& vec) const {
   Vector<T, Size> res;
 
   res[0] = m_data[1] * vec.getData()[2] - m_data[2] * vec.getData()[1];
-  res[1] = -(m_data[0] * vec.getData()[2] - m_data[2] * vec.getData()[0]);
+  res[1] = m_data[2] * vec.getData()[0] - m_data[0] * vec.getData()[2];
   res[2] = m_data[0] * vec.getData()[1] - m_data[1] * vec.getData()[0];
 
   return res;
