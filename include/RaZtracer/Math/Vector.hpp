@@ -5,6 +5,7 @@
 
 #include <array>
 #include <initializer_list>
+#include <limits>
 
 //#include "Matrix.hpp"
 
@@ -13,7 +14,8 @@ class Vector {
 public:
   Vector() = default;
   Vector(const Vector&) = default;
-  Vector(const Vector<T, Size + 1>& vec);
+  template <typename TI> explicit Vector(const Vector<TI, Size>& vec);
+  explicit Vector(const Vector<T, Size + 1>& vec);
   Vector(const Vector<T, Size - 1>& vec, T val);
   explicit Vector(T val);
   Vector(std::initializer_list<T> list);
@@ -27,6 +29,7 @@ public:
   T dot(const Vector& vec) const;
   Vector cross(const Vector& vec) const;
   Vector normalize() const;
+  Vector clamp(T lowerVal = std::numeric_limits<T>::min(), T upperVal = std::numeric_limits<T>::max()) const;
   float computeLength() const;
   std::size_t hash(std::size_t seed) const;
 

@@ -2,6 +2,19 @@
 #include <cassert>
 
 template <typename T, std::size_t Size>
+template <typename TI>
+Vector<T, Size>::Vector(const Vector<TI, Size>& vec) {
+  if (std::numeric_limits<TI>::max() > std::numeric_limits<T>::max()) {
+    for (std::size_t i = 0; i < Size; ++i)
+      m_data[i] = std::max(static_cast<TI>(std::numeric_limits<T>::min()),
+                           std::min(static_cast<TI>(std::numeric_limits<T>::max()),
+                                    static_cast<TI>(vec.getData()[i])));
+  } else {
+    std::copy(vec.getData().cbegin(), vec.getData().cend(), m_data.begin());
+  }
+}
+
+template <typename T, std::size_t Size>
 Vector<T, Size>::Vector(const Vector<T, Size + 1>& vec) {
   for (std::size_t i = 0; i < vec.getSize() - 1; ++i)
     m_data[i] = vec[i];
@@ -55,6 +68,16 @@ template <typename T, std::size_t Size>
 Vector<T, Size> Vector<T, Size>::normalize() const {
   Vector<T, Size> res = *this;
   res /= std::sqrt(dot(*this));
+  return res;
+}
+
+template <typename T, std::size_t Size>
+Vector<T, Size> Vector<T, Size>::clamp(T lowerVal, T upperVal) const {
+  Vector res = *this;
+
+  for (std::size_t i = 0; i < Size; ++i)
+    res[i] = std::max(lowerVal, std::min(m_data[i], upperVal));
+
   return res;
 }
 
