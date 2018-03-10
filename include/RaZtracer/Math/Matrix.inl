@@ -243,9 +243,10 @@ Matrix<T, W, H> Matrix<T, W, H>::inverse() const {
 }
 
 template <typename T, std::size_t W, std::size_t H>
-Matrix<T, W, H> Matrix<T, W, H>::operator+(Matrix mat) const {
-  mat += *this;
-  return mat;
+Matrix<T, W, H> Matrix<T, W, H>::operator+(const Matrix& mat) const {
+  Matrix<T, W, H> res = *this;
+  res += mat;
+  return res;
 }
 
 template <typename T, std::size_t W, std::size_t H>
@@ -256,9 +257,10 @@ Matrix<T, W, H> Matrix<T, W, H>::operator+(float val) const {
 }
 
 template <typename T, std::size_t W, std::size_t H>
-Matrix<T, W, H> Matrix<T, W, H>::operator-(Matrix mat) const {
-  mat -= *this;
-  return mat;
+Matrix<T, W, H> Matrix<T, W, H>::operator-(const Matrix& mat) const {
+  Matrix<T, W, H> res = *this;
+  res -= mat;
+  return res;
 }
 
 template <typename T, std::size_t W, std::size_t H>
@@ -269,9 +271,10 @@ Matrix<T, W, H> Matrix<T, W, H>::operator-(float val) const {
 }
 
 template <typename T, std::size_t W, std::size_t H>
-Matrix<T, W, H> Matrix<T, W, H>::operator%(Matrix mat) const {
-  mat %= *this;
-  return mat;
+Matrix<T, W, H> Matrix<T, W, H>::operator%(const Matrix& mat) const {
+  Matrix<T, W, H> res = *this;
+  res %= mat;
+  return res;
 }
 
 template <typename T, std::size_t W, std::size_t H>
@@ -282,9 +285,10 @@ Matrix<T, W, H> Matrix<T, W, H>::operator*(float val) const {
 }
 
 template <typename T, std::size_t W, std::size_t H>
-Matrix<T, W, H> Matrix<T, W, H>::operator/(Matrix mat) const {
-  mat /= *this;
-  return mat;
+Matrix<T, W, H> Matrix<T, W, H>::operator/(const Matrix& mat) const {
+  Matrix<T, W, H> res = *this;
+  res /= mat;
+  return res;
 }
 
 template <typename T, std::size_t W, std::size_t H>
@@ -299,11 +303,11 @@ template <std::size_t Size>
 Vector<T, Size> Matrix<T, W, H>::operator*(const Vector<T, Size>& vec) const {
   static_assert(H == Size, "Error: Matrix's height must be equal to vector's size.");
 
-  Vector<T, Size> res;
+  Vector<T, Size> res {};
 
   for (std::size_t j = 0; j < Size; ++j) {
     for (std::size_t i = 0; i < H; ++i)
-      res[j] = vec[j] + m_data[i * Size + j];
+      res[j] += vec[j] + m_data[i * Size + j];
   }
 
   return res;

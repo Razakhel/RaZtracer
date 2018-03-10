@@ -77,9 +77,10 @@ std::size_t Vector<T, Size>::hash(std::size_t seed) const {
 }
 
 template <typename T, std::size_t Size>
-Vector<T, Size> Vector<T, Size>::operator+(Vector<T, Size> vec) const {
-  vec += *this;
-  return vec;
+Vector<T, Size> Vector<T, Size>::operator+(const Vector<T, Size>& vec) const {
+  Vector<T, Size> res = *this;
+  res += vec;
+  return res;
 }
 
 template <typename T, std::size_t Size>
@@ -90,9 +91,10 @@ Vector<T, Size> Vector<T, Size>::operator+(float val) const {
 }
 
 template <typename T, std::size_t Size>
-Vector<T, Size> Vector<T, Size>::operator-(Vector<T, Size> vec) const {
-  vec -= *this;
-  return vec;
+Vector<T, Size> Vector<T, Size>::operator-(const Vector<T, Size>& vec) const {
+  Vector<T, Size> res = *this;
+  res -= vec;
+  return res;
 }
 
 template <typename T, std::size_t Size>
@@ -103,9 +105,10 @@ Vector<T, Size> Vector<T, Size>::operator-(float val) const {
 }
 
 template <typename T, std::size_t Size>
-Vector<T, Size> Vector<T, Size>::operator*(Vector<T, Size> vec) const {
-  vec *= *this;
-  return vec;
+Vector<T, Size> Vector<T, Size>::operator*(const Vector<T, Size>& vec) const {
+  Vector<T, Size> res = *this;
+  res *= vec;
+  return res;
 }
 
 template <typename T, std::size_t Size>
@@ -116,9 +119,10 @@ Vector<T, Size> Vector<T, Size>::operator*(float val) const {
 }
 
 template <typename T, std::size_t Size>
-Vector<T, Size> Vector<T, Size>::operator/(Vector<T, Size> vec) const {
-  vec /= *this;
-  return vec;
+Vector<T, Size> Vector<T, Size>::operator/(const Vector<T, Size>& vec) const {
+  Vector<T, Size> res = *this;
+  res /= vec;
+  return res;
 }
 
 template <typename T, std::size_t Size>
