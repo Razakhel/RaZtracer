@@ -82,31 +82,31 @@ void importObj(std::ifstream& file, std::vector<ShapePtr>& shapes) {
       }
 
       if (quadFaces) {
-        posIndices.back().emplace_back(partIndices[2]);
         posIndices.back().emplace_back(partIndices[0]);
+        posIndices.back().emplace_back(partIndices[2]);
         posIndices.back().emplace_back(partIndices[3]);
 
-        texcoordsIndices.back().emplace_back(partIndices[6]);
         texcoordsIndices.back().emplace_back(partIndices[4]);
+        texcoordsIndices.back().emplace_back(partIndices[6]);
         texcoordsIndices.back().emplace_back(partIndices[7]);
 
-        normalsIndices.back().emplace_back(partIndices[10]);
         normalsIndices.back().emplace_back(partIndices[8]);
+        normalsIndices.back().emplace_back(partIndices[10]);
         normalsIndices.back().emplace_back(partIndices[11]);
       }
 
-      posIndices.back().emplace_back(partIndices[1]);
       posIndices.back().emplace_back(partIndices[0]);
+      posIndices.back().emplace_back(partIndices[1]);
       posIndices.back().emplace_back(partIndices[2]);
 
-      texcoordsIndices.back().emplace_back(partIndices[4 + quadFaces]);
       texcoordsIndices.back().emplace_back(partIndices[3 + quadFaces]);
+      texcoordsIndices.back().emplace_back(partIndices[4 + quadFaces]);
       texcoordsIndices.back().emplace_back(partIndices[5 + quadFaces]);
 
       const auto quadStride = static_cast<uint8_t>(quadFaces * 2);
 
-      normalsIndices.back().emplace_back(partIndices[7 + quadStride]);
       normalsIndices.back().emplace_back(partIndices[6 + quadStride]);
+      normalsIndices.back().emplace_back(partIndices[7 + quadStride]);
       normalsIndices.back().emplace_back(partIndices[8 + quadStride]);
     } else if (line[0] == 'm') {
       std::string materialName;
