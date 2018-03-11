@@ -25,12 +25,22 @@ public:
   void addLight(LightPtr light) { m_lights.emplace_back(std::move(light)); }
   void addModel(const std::string& fileName) { ModelLoader::importModel(fileName, m_shapes); }
 
+  void enableAmbientOcclusion(bool enabled, uint16_t raySamples = 32);
   ImagePtr render();
 
 private:
-  CameraPtr m_camera;
-  std::vector<ShapePtr> m_shapes;
-  std::vector<LightPtr> m_lights;
+  struct SceneParams {
+    bool ambientOcclusion;
+    uint16_t ambOccRaySamples;
+  };
+
+  float computeLighting(const RayHit& hit);
+  float computeAmbientOcclusion(const RayHit& hit);
+
+  SceneParams m_params {};
+  CameraPtr m_camera {};
+  std::vector<ShapePtr> m_shapes {};
+  std::vector<LightPtr> m_lights {};
 };
 
 #endif // RAZTRACER_SCENE_HPP
