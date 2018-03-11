@@ -5,14 +5,12 @@
 
 int main() {
   Window window(800, 600, "RaZtracer");
-
   Scene scene;
+  scene.enableAmbientOcclusion(true, 32);
 
-  scene.addModel("../assets/meshes/ball.obj");
+  scene.addModel("../assets/meshes/cornell.obj");
 
-  //scene.addLight(std::make_unique<PointLight>(Vec3f({ 0.f, 1.f, 0.f }), Vec3f(1.f)));
-
-  scene.setCamera(std::make_unique<Camera>(800, 600, 45.f, 0.1f, 100.f, Vec3f({ 0.f, 0.f, 5.f })));
+  scene.setCamera(std::make_unique<Camera>(window.getWidth(), window.getHeight(), 45.f, 0.1f, 100.f, Vec3f({ 0.f, 0.f, 5.f })));
 
   const auto startTime = std::chrono::system_clock::now();
   ImagePtr img = scene.render();
