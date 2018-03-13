@@ -6,7 +6,7 @@
 int main() {
   Window window(800, 600, "RaZtracer");
   Scene scene;
-  scene.enableAmbientOcclusion(true, 32);
+  scene.enableAmbientOcclusion(true, 64);
 
   scene.addModel("../assets/meshes/cornell.obj");
 

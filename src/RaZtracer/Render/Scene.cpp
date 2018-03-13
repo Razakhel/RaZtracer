@@ -1,5 +1,4 @@
 #include <limits>
-#include <random>
 
 #include "RaZtracer/Math/Matrix.hpp"
 #include "RaZtracer/Math/Quaternion.hpp"
@@ -31,6 +30,7 @@ ImagePtr Scene::render() {
 
   ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
 
+  #pragma omp parallel for schedule(dynamic, 1)
   for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
     const std::size_t finalHeightIndex = heightIndex * imgWidth;
 
@@ -42,6 +42,7 @@ ImagePtr Scene::render() {
 
       RayHit hit {};
       RayHit closestHit {};
+      Vec3b finalColor({ 50, 75, 75 });
 
       closestHit.distance = std::numeric_limits<float>::infinity();
 
@@ -60,13 +61,13 @@ ImagePtr Scene::render() {
         else
           hitColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
 
-        const Vec3b finalColor(hitColor * 255);
-
-        const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
-        img->getData()[finalIndex]     = finalColor[0];
-        img->getData()[finalIndex + 1] = finalColor[1];
-        img->getData()[finalIndex + 2] = finalColor[2];
+        finalColor = Vec3b(hitColor * 255);
       }
+
+      const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
+      img->getData()[finalIndex]     = finalColor[0];
+      img->getData()[finalIndex + 1] = finalColor[1];
+      img->getData()[finalIndex + 2] = finalColor[2];
     }
   }
 
@@ -91,11 +92,10 @@ float Scene::computeLighting(const RayHit& hit) {
 }
 
 float Scene::computeAmbientOcclusion(const RayHit& hit) {
-  uint16_t hitCount = 0;
+  float hitCount = 0;
 
-  std::random_device randomDevice;
-  std::mt19937 randomGenerator(randomDevice());
-  std::uniform_real_distribution<float> randomCirc(0.f, 360.f);
+  std::mt19937 randomGenerator(m_randomDevice());
+  std::uniform_int_distribution<uint16_t> randomCirc(0, 360);
 
   for (uint16_t raySample = 0; raySample < m_params.ambOccRaySamples; ++raySample) {
     const float cosTheta = 1 - (2.f * raySample + 1) / (2 * m_params.ambOccRaySamples);
@@ -127,5 +127,5 @@ float Scene::computeAmbientOcclusion(const RayHit& hit) {
     }
   }
 
-  return (1 - (static_cast<float>(hitCount) / m_params.ambOccRaySamples));
+  return (1 - (hitCount / m_params.ambOccRaySamples));
 }
