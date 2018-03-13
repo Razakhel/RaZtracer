@@ -4,6 +4,7 @@
 #define RAZTRACER_SCENE_HPP
 
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -25,7 +26,7 @@ public:
   void addLight(LightPtr light) { m_lights.emplace_back(std::move(light)); }
   void addModel(const std::string& fileName) { ModelLoader::importModel(fileName, m_shapes); }
 
-  void enableAmbientOcclusion(bool enabled, uint16_t raySamples = 32);
+  void enableAmbientOcclusion(bool enabled, uint16_t raySamples = 64);
   ImagePtr render();
 
 private:
@@ -41,6 +42,7 @@ private:
   CameraPtr m_camera {};
   std::vector<ShapePtr> m_shapes {};
   std::vector<LightPtr> m_lights {};
+  std::random_device m_randomDevice {};
 };
 
 #endif // RAZTRACER_SCENE_HPP

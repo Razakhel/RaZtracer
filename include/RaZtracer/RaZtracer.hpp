@@ -19,6 +19,7 @@
 #include "Utils/MtlLoader.hpp"
 #include "Utils/RayHit.hpp"
 #include "Utils/Shape.hpp"
+#include "Utils/Vertex.hpp"
 #include "Utils/Window.hpp"
 
 #endif // RAZTRACER_RAZTRACER_HPP
