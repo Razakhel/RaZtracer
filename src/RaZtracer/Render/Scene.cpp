@@ -14,7 +14,7 @@ namespace {
     xAxis = Vec3f({ 1.f + sign * yAxis[0] * yAxis[0] * a, sign * b, -sign * yAxis[0] });
     zAxis = Vec3f({ b, sign + yAxis[1] * yAxis[1] * a, -yAxis[1] });
   }
-}
+} // namespace
 
 const float PHI = (std::sqrt(5.f) + 1) / 2;
 
@@ -26,7 +26,12 @@ void Scene::enableAmbientOcclusion(bool enabled, uint16_t raySamples) {
 ImagePtr Scene::render() {
   const unsigned int imgWidth = m_camera->getFrameWidth();
   const unsigned int imgHeight = m_camera->getFrameHeight();
+
   const float scaleFactor = std::tan(m_camera->getFieldOfView() / 2);
+  const float aspectRatio = m_camera->getAspectRatio() * scaleFactor;
+
+  const float sampleStride = 1.f / m_params.multiSamplingSamples;
+  std::normal_distribution<float> normalDistrib(0.5f * sampleStride, (m_params.multiSamplingSamples != 1 ? 0.1f * sampleStride : 0.f));
 
   ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
 
@@ -35,35 +40,43 @@ ImagePtr Scene::render() {
     const std::size_t finalHeightIndex = heightIndex * imgWidth;
 
     for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
-      const Vec3f screenSpaceDirection({ (2 * (widthIndex + 0.5f) / imgWidth - 1) * m_camera->getAspectRatio() * scaleFactor,
-                                         (1 - 2 * (heightIndex + 0.5f) / imgHeight) * scaleFactor,
-                                         -1.f });
-      const Vec3f rayDirection = screenSpaceDirection.normalize();
+      Vec3f sumColor {};
 
-      RayHit hit {};
-      RayHit closestHit {};
-      Vec3b finalColor({ 50, 75, 75 });
+      for (float heightSample = heightIndex; heightSample < heightIndex + 1.f; heightSample += sampleStride) {
+        const float heightDirection = (1 - 2 * (heightSample + normalDistrib(m_randomGenerator)) / imgHeight) * scaleFactor;
 
-      closestHit.distance = std::numeric_limits<float>::infinity();
+        for (float widthSample = widthIndex; widthSample < widthIndex + 1.f; widthSample += sampleStride) {
+          const float widthDirection = (2 * (widthSample + normalDistrib(m_randomGenerator)) / imgWidth - 1) * aspectRatio;
 
-      for (const auto& shape : m_shapes) {
-        if (shape->intersect(m_camera->getPosition(), rayDirection, &hit) && hit.distance < closestHit.distance)
-          closestHit = hit;
+          const Vec3f screenSpaceDirection({ widthDirection, heightDirection, -1.f });
+          const Vec3f rayDirection = screenSpaceDirection.normalize();
+
+          RayHit hit {};
+          RayHit closestHit {};
+
+          closestHit.distance = std::numeric_limits<float>::infinity();
+
+          for (const auto& shape : m_shapes) {
+            if (shape->intersect(m_camera->getPosition(), rayDirection, &hit) && hit.distance < closestHit.distance)
+              closestHit = hit;
+          }
+
+          if (closestHit.distance < std::numeric_limits<float>::infinity()) {
+            Vec3f hitColor = closestHit.material->getDiffuseColor();
+
+            if (m_params.ambientOcclusion)
+              hitColor *= computeAmbientOcclusion(closestHit);
+            else if (!m_lights.empty())
+              hitColor *= computeLighting(closestHit);
+            else
+              hitColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
+
+            sumColor += hitColor;
+          }
+        }
       }
 
-      if (closestHit.distance < std::numeric_limits<float>::infinity()) {
-        Vec3f hitColor = closestHit.material->getDiffuseColor();
-
-        if (m_params.ambientOcclusion)
-          hitColor *= computeAmbientOcclusion(closestHit);
-        else if (!m_lights.empty())
-          hitColor *= computeLighting(closestHit);
-        else
-          hitColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
-
-        finalColor = Vec3b(hitColor * 255);
-      }
-
+      const Vec3b finalColor((sumColor * 255) / (m_params.multiSamplingSamples * m_params.multiSamplingSamples));
       const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
       img->getData()[finalIndex]     = finalColor[0];
       img->getData()[finalIndex + 1] = finalColor[1];
@@ -92,9 +105,9 @@ float Scene::computeLighting(const RayHit& hit) {
 }
 
 float Scene::computeAmbientOcclusion(const RayHit& hit) {
+  const Vec3f position = hit.position + hit.normal * 0.0001f;
   float hitCount = 0;
 
-  std::mt19937 randomGenerator(m_randomDevice());
   std::uniform_int_distribution<uint16_t> randomCirc(0, 360);
 
   for (uint16_t raySample = 0; raySample < m_params.ambOccRaySamples; ++raySample) {
@@ -108,7 +121,7 @@ float Scene::computeAmbientOcclusion(const RayHit& hit) {
 
     Vec4f direction({ cosPhi * sinTheta, cosTheta, sinPhi * sinTheta, 1.f });
 
-    const Quaternion<float> rotation(randomCirc(randomGenerator), 0.f, 1.f, 0.f);
+    const Quaternion<float> rotation(randomCirc(m_randomGenerator), 0.f, 1.f, 0.f);
     direction = rotation.computeMatrix() * direction;
     direction /= direction[3];
 
@@ -120,7 +133,7 @@ float Scene::computeAmbientOcclusion(const RayHit& hit) {
     const float weight = cosTheta * 2;
 
     for (const auto& shape : m_shapes) {
-      if (shape->intersect(hit.position + hit.normal * 0.0001f, worldDirection)) {
+      if (shape->intersect(position, worldDirection)) {
         hitCount += weight;
         break;
       }

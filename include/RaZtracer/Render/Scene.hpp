@@ -16,7 +16,7 @@
 
 class Scene {
 public:
-  Scene() = default;
+  Scene() : m_randomGenerator{ m_randomDevice() } {}
 
   const std::vector<ShapePtr>& getShapes() const { return m_shapes; }
 
@@ -27,12 +27,15 @@ public:
   void addModel(const std::string& fileName) { ModelLoader::importModel(fileName, m_shapes); }
 
   void enableAmbientOcclusion(bool enabled, uint16_t raySamples = 64);
+  void enableMultiSampling(uint16_t samples = 8) { m_params.multiSamplingSamples = std::max(static_cast<uint16_t>(1), samples); }
   ImagePtr render();
 
 private:
   struct SceneParams {
-    bool ambientOcclusion;
-    uint16_t ambOccRaySamples;
+    bool ambientOcclusion = false;
+    uint16_t ambOccRaySamples = 0;
+
+    uint16_t multiSamplingSamples = 1;
   };
 
   float computeLighting(const RayHit& hit);
@@ -43,6 +46,7 @@ private:
   std::vector<ShapePtr> m_shapes {};
   std::vector<LightPtr> m_lights {};
   std::random_device m_randomDevice {};
+  std::mt19937 m_randomGenerator {};
 };
 
 #endif // RAZTRACER_SCENE_HPP
