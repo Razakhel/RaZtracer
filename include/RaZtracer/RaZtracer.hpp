@@ -14,6 +14,7 @@
 #include "Render/Mesh.hpp"
 #include "Render/Scene.hpp"
 #include "Render/Submesh.hpp"
+#include "Utils/BVH.hpp"
 #include "Utils/Image.hpp"
 #include "Utils/ModelLoader.hpp"
 #include "Utils/MtlLoader.hpp"

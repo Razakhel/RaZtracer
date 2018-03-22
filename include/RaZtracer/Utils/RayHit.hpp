@@ -10,7 +10,7 @@ struct RayHit {
   Vec3f normal;
   Vec2f texcoords;
   MaterialPtr material;
-  float distance;
+  float distance = std::numeric_limits<float>::infinity();
 };
 
 #endif // RAZTRACER_RAYHIT_HPP
