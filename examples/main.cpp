@@ -6,12 +6,13 @@
 int main() {
   Window window(800, 600, "RaZtracer");
   Scene scene;
-  //scene.enableAmbientOcclusion(true, 64);
-  scene.enableMultiSampling(8);
+  scene.enableAmbientOcclusion(true, 32);
+  scene.enableMultiSampling(4);
 
-  scene.addModel("../assets/meshes/cornell.obj");
+  scene.addModel("../assets/meshes/queen.off");
+  scene.buildBVH();
 
-  scene.setCamera(std::make_unique<Camera>(window.getWidth(), window.getHeight(), 45.f, 0.1f, 100.f, Vec3f({ 0.f, 0.f, 5.f })));
+  scene.setCamera(std::make_unique<Camera>(window.getWidth(), window.getHeight(), 45.f, 0.1f, 100.f, Vec3f({ 0.f, 0.f, 1.f })));
 
   const auto startTime = std::chrono::system_clock::now();
   ImagePtr img = scene.render();
