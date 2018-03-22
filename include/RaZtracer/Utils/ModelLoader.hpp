@@ -7,7 +7,7 @@
 
 namespace ModelLoader {
 
-void importModel(const std::string& file, std::vector<ShapePtr>& shapes);
+void importModel(const std::string& file, std::vector<DrawableShapePtr>& shapes);
 
 } // namespace ModelLoader
 
