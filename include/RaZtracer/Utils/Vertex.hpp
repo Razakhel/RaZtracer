@@ -6,6 +6,7 @@
 #include "../Math/Vector.hpp"
 
 struct Vertex {
+  Vertex() = default;
   explicit Vertex(const Vec3f& vertPosition) : position{ vertPosition } {}
   Vertex(const Vec3f& vertPosition, const Vec3f& vertNormal) : position{ vertPosition }, normal{ vertNormal } {}
 
