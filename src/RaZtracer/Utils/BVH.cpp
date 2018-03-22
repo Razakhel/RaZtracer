@@ -18,7 +18,6 @@ void BVHNode::build(std::vector<DrawableShapePtr>& shapes, std::size_t beginInde
     return;
   }
 
-  // construire la boite englobante des centres des primitives d'indices [begin .. end[
   auto currentBox = shapes[beginIndex]->computeBoundingBox();
 
   for (std::size_t i = beginIndex + 1; i < endIndex; ++i) {

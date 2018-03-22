@@ -26,7 +26,7 @@ bool solveQuadratic(float a, float b, float c, float& firstHitDist, float& secon
 
 } // namespace
 
-Shape::Shape(const Vec3f& color, float transparency) {
+Drawable::Drawable(const Vec3f& color, float transparency) {
   m_material = std::make_shared<Material>();
   m_material->setDiffuseColor(color);
   m_material->setTransparency(transparency);
@@ -61,50 +61,52 @@ bool Sphere::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit
   return true;
 }
 
-bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
-  float minWidthDist = (m_bottomLeftPosition[0] - rayOrigin[0]) / rayDirection[0];
-  float maxWidthDist = (m_topRightPosition[0] - rayOrigin[0]) / rayDirection[0];
+bool AABB::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
+  const Vec3f invDir({ 1.f / rayDirection[0], 1.f / rayDirection[1], 1.f / rayDirection[2] });
+  Vec3f closestBound = m_bottomLeftPosition;
+  Vec3f farthestBound = m_topRightPosition;
 
-  if (minWidthDist > maxWidthDist)
-    std::swap(minWidthDist, maxWidthDist);
+  if(rayDirection[0] < 0)
+    std::swap(closestBound[0], farthestBound[0]);
 
-  float minHeightDist = (m_bottomLeftPosition[1] - rayOrigin[1]) / rayDirection[1];
-  float maxHeightDist = (m_topRightPosition[1] - rayOrigin[1]) / rayDirection[1];
+  if(rayDirection[1] < 0)
+    std::swap(closestBound[1], farthestBound[1]);
 
-  if (minHeightDist > maxHeightDist)
-    std::swap(minHeightDist, maxHeightDist);
+  if(rayDirection[2] < 0)
+    std::swap(closestBound[2], farthestBound[2]);
 
-  if ((minWidthDist > maxHeightDist) || (minHeightDist > maxWidthDist))
-    return false;
-
-  if (minHeightDist > minWidthDist)
-    minWidthDist = minHeightDist;
-
-  if (maxHeightDist < maxWidthDist)
-    maxWidthDist = maxHeightDist;
-
-  float minDepthDist = (m_bottomLeftPosition[2] - rayOrigin[2]) / rayDirection[2];
-  float maxDepthDist = (m_topRightPosition[2] - rayOrigin[2]) / rayDirection[2];
-
-  if (minDepthDist > maxDepthDist)
-    std::swap(minDepthDist, maxDepthDist);
-
-  if ((minWidthDist > maxDepthDist) || (minDepthDist > maxWidthDist))
-    return false;
-
-  if (minDepthDist > minWidthDist)
-    minWidthDist = minDepthDist;
-
-  if (maxDepthDist < maxWidthDist)
-    maxWidthDist = maxDepthDist;
+  const Vec3f closestPlanePos = (closestBound - rayOrigin) * invDir;
+  const Vec3f farthestPlanePos = (farthestBound - rayOrigin) * invDir;
+  const float minHitDist = std::max(closestPlanePos[0], std::max(closestPlanePos[1], std::max(closestPlanePos[2], 0.f)));
+  const float maxHitDist = std::min(farthestPlanePos[0], std::min(farthestPlanePos[1], farthestPlanePos[2]));
 
   if (hit) {
-    hit->position = rayOrigin + rayDirection * maxWidthDist;
-    hit->material = m_material;
-    hit->distance = maxWidthDist;
+    hit->position = rayOrigin + rayDirection * minHitDist;
+    hit->distance = minHitDist;
   }
 
-  return (maxWidthDist > 0);
+  return (minHitDist <= maxHitDist);
+}
+
+bool Box::intersect(const Vec3f& rayOrigin, const Vec3f& rayDirection, RayHit* hit) const {
+  const bool res = AABB::intersect(rayOrigin, rayDirection, hit);
+
+  if (hit)
+    hit->material = m_material;
+
+  return res;
+}
+
+std::unique_ptr<AABB> Triangle::computeBoundingBox() const {
+  const float xMax = std::max(m_firstVert.position[0], std::max(m_secondVert.position[0], m_thirdVert.position[0]));
+  const float yMax = std::max(m_firstVert.position[1], std::max(m_secondVert.position[1], m_thirdVert.position[1]));
+  const float zMax = std::max(m_firstVert.position[2], std::max(m_secondVert.position[2], m_thirdVert.position[2]));
+
+  const float xMin = std::min(m_firstVert.position[0], std::min(m_secondVert.position[0], m_thirdVert.position[0]));
+  const float yMin = std::min(m_firstVert.position[1], std::min(m_secondVert.position[1], m_thirdVert.position[1]));
+  const float zMin = std::min(m_firstVert.position[2], std::min(m_secondVert.position[2], m_thirdVert.position[2]));
+
+  return std::make_unique<AABB>(Vec3f({ xMax, yMax, zMax }), Vec3f({ xMin, yMin, zMin }));
 }
 
 void Triangle::computeNormal() {
