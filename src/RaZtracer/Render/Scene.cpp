@@ -7,7 +7,7 @@
 
 namespace {
 
-constexpr float PHI = (std::sqrt(5.f) + 1) / 2;
+const float PHI = (std::sqrt(5.f) + 1) / 2;
 std::mt19937 randomGenerator(0);
 
 void buildOrthoBase(const Vec3f& yAxis, Vec3f& xAxis, Vec3f& zAxis) {
