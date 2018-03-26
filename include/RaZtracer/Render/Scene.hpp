@@ -40,8 +40,6 @@ private:
 
   float computeLighting(const RayHit& hit) const ;
   float computeAmbientOcclusion(const RayHit& hit) const;
-  ImagePtr renderStandard() const;
-  ImagePtr renderBVH() const;
 
   SceneParams m_params {};
   CameraPtr m_camera {};

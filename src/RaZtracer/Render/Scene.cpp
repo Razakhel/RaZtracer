@@ -27,10 +27,64 @@ void Scene::enableAmbientOcclusion(bool enabled, uint16_t raySamples) {
 }
 
 ImagePtr Scene::render() const {
-  if (m_bvh)
-    return renderBVH();
-  else
-    return renderStandard();
+  const unsigned int imgWidth = m_camera->getFrameWidth();
+  const unsigned int imgHeight = m_camera->getFrameHeight();
+
+  const float sampleStride = 1.f / m_params.multiSamplingSamples;
+  std::normal_distribution<float> normalDistrib(0.5f * sampleStride, (m_params.multiSamplingSamples != 1 ? 0.1f * sampleStride : 0.f));
+
+  ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
+
+  #pragma omp parallel for schedule(dynamic, 1)
+  for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
+    std::cout << "Computed: " << (static_cast<float>(heightIndex) / imgHeight) * 100 << '%' << std::endl;
+
+    for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
+      Vec3f sumColor {};
+
+      for (float heightSample = heightIndex; heightSample < heightIndex + 1.f; heightSample += sampleStride) {
+        for (float widthSample = widthIndex; widthSample < widthIndex + 1.f; widthSample += sampleStride) {
+          const Vec3f rayDirection = m_camera->computeRayDirection(widthSample + normalDistrib(randomGenerator),
+                                                                   heightSample + normalDistrib(randomGenerator));
+          RayHit closestHit {};
+
+          if (m_bvh) {
+            if (!m_bvh->recoverHitShape(m_shapes, m_camera->getPosition(), rayDirection, closestHit))
+              continue;
+          } else {
+            RayHit hit {};
+
+            for (const auto& shape : m_shapes) {
+              if (shape->intersect(m_camera->getPosition(), rayDirection, &hit) && hit.distance < closestHit.distance)
+                closestHit = hit;
+            }
+          }
+
+          if (closestHit.distance < std::numeric_limits<float>::infinity()) {
+            Vec3f hitColor = closestHit.material->getDiffuseColor();
+
+            if (m_params.ambientOcclusion)
+              hitColor *= computeAmbientOcclusion(closestHit);
+
+            if (!m_lights.empty())
+              hitColor *= computeLighting(closestHit);
+            else
+              hitColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
+
+            sumColor += hitColor;
+          }
+        }
+      }
+
+      const Vec3b finalColor((sumColor * 255) / (m_params.multiSamplingSamples * m_params.multiSamplingSamples));
+      const std::size_t finalIndex = (heightIndex * imgWidth + widthIndex) * 3;
+      img->getData()[finalIndex]     = finalColor[0];
+      img->getData()[finalIndex + 1] = finalColor[1];
+      img->getData()[finalIndex + 2] = finalColor[2];
+    }
+  }
+
+  return img;
 }
 
 float Scene::computeLighting(const RayHit& hit) const {
@@ -40,17 +94,18 @@ float Scene::computeLighting(const RayHit& hit) const {
   for (const auto& light : m_lights) {
     const Vec3f lightDir = (light->getPosition() - hit.position).normalize();
 
-    if (!m_bvh) {
+    if (m_bvh) {
+      RayHit bvhHit {};
+
+      if (m_bvh->recoverHitShape(m_shapes, position, lightDir, bvhHit))
+        ++hitCount;
+    } else {
       for (const auto& shapeObstacle : m_shapes) {
         if (shapeObstacle->intersect(position, lightDir)) {
           ++hitCount;
           break;
         }
       }
-    } else {
-      RayHit bvhHit {};
-      if (m_bvh->recoverHitShape(m_shapes, position, lightDir, bvhHit))
-        ++hitCount;
     }
   }
 
@@ -85,141 +140,20 @@ float Scene::computeAmbientOcclusion(const RayHit& hit) const {
 
     const float weight = cosTheta * 2;
 
-    if (!m_bvh) {
+    if (m_bvh) {
+      RayHit bvhHit {};
+
+      if (m_bvh->recoverHitShape(m_shapes, position, worldDirection, bvhHit))
+        hitCount += weight;
+    } else {
       for (const auto& shape : m_shapes) {
         if (shape->intersect(position, worldDirection)) {
           hitCount += weight;
           break;
         }
       }
-    } else {
-      RayHit bvhHit {};
-      if (m_bvh->recoverHitShape(m_shapes, position, worldDirection, bvhHit))
-        hitCount += weight;
     }
   }
 
   return (1 - (hitCount / m_params.ambOccRaySamples));
-}
-
-ImagePtr Scene::renderStandard() const {
-  const unsigned int imgWidth = m_camera->getFrameWidth();
-  const unsigned int imgHeight = m_camera->getFrameHeight();
-
-  const float scaleFactor = std::tan(m_camera->getFieldOfView() / 2);
-  const float aspectRatio = m_camera->getAspectRatio() * scaleFactor;
-
-  const float sampleStride = 1.f / m_params.multiSamplingSamples;
-  std::normal_distribution<float> normalDistrib(0.5f * sampleStride, (m_params.multiSamplingSamples != 1 ? 0.1f * sampleStride : 0.f));
-
-  ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
-
-  #pragma omp parallel for schedule(dynamic, 1)
-  for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
-    const std::size_t finalHeightIndex = heightIndex * imgWidth;
-    std::cout << "Computed: " << (static_cast<float>(heightIndex) / imgHeight) * 100 << '%' << std::endl;
-
-    for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
-      Vec3f sumColor {};
-
-      for (float heightSample = heightIndex; heightSample < heightIndex + 1.f; heightSample += sampleStride) {
-        const float heightDirection = (1 - 2 * (heightSample + normalDistrib(randomGenerator)) / imgHeight) * scaleFactor;
-
-        for (float widthSample = widthIndex; widthSample < widthIndex + 1.f; widthSample += sampleStride) {
-          const float widthDirection = (2 * (widthSample + normalDistrib(randomGenerator)) / imgWidth - 1) * aspectRatio;
-
-          const Vec3f screenSpaceDirection({ widthDirection, heightDirection, -1.f });
-          const Vec3f rayDirection = screenSpaceDirection.normalize();
-
-          RayHit hit {};
-          RayHit closestHit {};
-
-          for (const auto& shape : m_shapes) {
-            if (shape->intersect(m_camera->getPosition(), rayDirection, &hit) && hit.distance < closestHit.distance)
-              closestHit = hit;
-          }
-
-          if (closestHit.distance < std::numeric_limits<float>::infinity()) {
-            Vec3f hitColor = closestHit.material->getDiffuseColor();
-
-            if (m_params.ambientOcclusion)
-              hitColor *= computeAmbientOcclusion(closestHit);
-
-            if (!m_lights.empty())
-              hitColor *= computeLighting(closestHit);
-            else
-              hitColor *= 1 - (rayDirection.dot(closestHit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
-
-            sumColor += hitColor;
-          }
-        }
-      }
-
-      const Vec3b finalColor((sumColor * 255) / (m_params.multiSamplingSamples * m_params.multiSamplingSamples));
-      const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
-      img->getData()[finalIndex]     = finalColor[0];
-      img->getData()[finalIndex + 1] = finalColor[1];
-      img->getData()[finalIndex + 2] = finalColor[2];
-    }
-  }
-
-  return img;
-}
-
-ImagePtr Scene::renderBVH() const {
-  const unsigned int imgWidth = m_camera->getFrameWidth();
-  const unsigned int imgHeight = m_camera->getFrameHeight();
-
-  const float scaleFactor = std::tan(m_camera->getFieldOfView() / 2);
-  const float aspectRatio = m_camera->getAspectRatio() * scaleFactor;
-
-  const float sampleStride = 1.f / m_params.multiSamplingSamples;
-  std::normal_distribution<float> normalDistrib(0.5f * sampleStride, (m_params.multiSamplingSamples != 1 ? 0.1f * sampleStride : 0.f));
-
-  ImagePtr img = std::make_unique<Image>(imgWidth, imgHeight);
-
-  #pragma omp parallel for schedule(dynamic, 1)
-  for (std::size_t heightIndex = 0; heightIndex < imgHeight; ++heightIndex) {
-    const std::size_t finalHeightIndex = heightIndex * imgWidth;
-    std::cout << "Computed: " << (static_cast<float>(heightIndex) / imgHeight) * 100 << '%' << std::endl;
-
-    for (std::size_t widthIndex = 0; widthIndex < imgWidth; ++widthIndex) {
-      Vec3f sumColor {};
-
-      for (float heightSample = heightIndex; heightSample < heightIndex + 1.f; heightSample += sampleStride) {
-        const float heightDirection = (1 - 2 * (heightSample + normalDistrib(randomGenerator)) / imgHeight) * scaleFactor;
-
-        for (float widthSample = widthIndex; widthSample < widthIndex + 1.f; widthSample += sampleStride) {
-          const float widthDirection = (2 * (widthSample + normalDistrib(randomGenerator)) / imgWidth - 1) * aspectRatio;
-
-          const Vec3f screenSpaceDirection({ widthDirection, heightDirection, -1.f });
-          const Vec3f rayDirection = screenSpaceDirection.normalize();
-
-          RayHit hit {};
-
-          if (m_bvh->recoverHitShape(m_shapes, m_camera->getPosition(), rayDirection, hit)) {
-            Vec3f hitColor = hit.material->getDiffuseColor();
-
-            if (m_params.ambientOcclusion)
-              hitColor *= computeAmbientOcclusion(hit);
-
-            if (!m_lights.empty())
-              hitColor *= computeLighting(hit);
-            else
-              hitColor *= 1 - (rayDirection.dot(hit.normal) / 2 + 0.5f); // Simulate lighting coming from camera
-
-            sumColor += hitColor;
-          }
-        }
-      }
-
-      const Vec3b finalColor((sumColor * 255) / (m_params.multiSamplingSamples * m_params.multiSamplingSamples));
-      const std::size_t finalIndex = (finalHeightIndex + widthIndex) * 3;
-      img->getData()[finalIndex]     = finalColor[0];
-      img->getData()[finalIndex + 1] = finalColor[1];
-      img->getData()[finalIndex + 2] = finalColor[2];
-    }
-  }
-
-  return img;
 }
