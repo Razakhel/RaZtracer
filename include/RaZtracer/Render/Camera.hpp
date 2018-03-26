@@ -29,6 +29,7 @@ public:
   float getAspectRatio() const { return m_frameRatio; }
   float getFieldOfView() const { return m_fieldOfView; }
 
+  Vec3f computeRayDirection(float widthPos, float heightPos) const;
   Mat4f computePerspectiveMatrix() const;
   Mat4f lookAt(const Vec3f& target = Vec3f(0.f), const Vec3f& orientation = Vec3f({ 0.f, 1.f, 0.f })) const;
 

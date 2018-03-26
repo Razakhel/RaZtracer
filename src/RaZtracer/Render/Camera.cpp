@@ -1,5 +1,16 @@
 #include "RaZtracer/Render/Camera.hpp"
 
+Vec3f Camera::computeRayDirection(float widthPos, float heightPos) const {
+  const float scaleFactor = std::tan(m_fieldOfView / 2);
+  const float aspectRatio = m_frameRatio * scaleFactor;
+
+  const Vec3f direction({ (2 * widthPos / m_frameWidth - 1) * aspectRatio,
+                          (1 - 2 * heightPos / m_frameHeight) * scaleFactor,
+                          -1.f });
+
+  return direction.normalize();
+}
+
 Mat4f Camera::computePerspectiveMatrix() const {
   const float halfFovTangent = std::tan(m_fieldOfView / 2);
   const float planeDist = m_farPlane - m_nearPlane;
