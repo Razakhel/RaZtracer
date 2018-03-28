@@ -28,6 +28,7 @@ public:
 
   T dot(const Vector& vec) const;
   Vector cross(const Vector& vec) const;
+  Vector reflect(const Vector& normal) const { return (*this - normal * dot(normal) * 2); }
   Vector normalize() const;
   Vector clamp(T lowerVal = std::numeric_limits<T>::min(), T upperVal = std::numeric_limits<T>::max()) const;
   float computeLength() const;
